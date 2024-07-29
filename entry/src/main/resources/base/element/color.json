@@ -1,0 +1,16 @@
+{
+  "color": [
+    {
+      "name": "start_window_background",
+      "value": "#1b1616"
+    },
+    {
+      "name": "log_text_font_color",
+      "value": "#ffffb800"
+    },
+    {
+      "name": "normal_text_font_color",
+      "value": "#ff6cff00"
+    }
+  ]
+}

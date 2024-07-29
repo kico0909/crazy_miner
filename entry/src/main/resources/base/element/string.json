@@ -1,0 +1,39 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "module description"
+    }
+  ,{
+      "name": "EntryAbility_desc",
+      "value": "description"
+    },{
+      "name": "EntryAbility_label",
+      "value": "深山#矿工"
+    },
+    {
+      "name": "attr_key_to_text",
+      "value": "strength, 精力, intellect, 智力, strong, 力量, luck, 幸运, exp, 经验"
+    },
+    {
+      "name": "attr_key_to_text_from_strength",
+      "value": "精力"
+    },
+    {
+      "name": "attr_key_to_text_from_intellect",
+      "value": "智力"
+    },
+    {
+      "name": "attr_key_to_text_from_strong",
+      "value": "力量"
+    },
+    {
+      "name": "attr_key_to_text_from_luck",
+      "value": "幸运"
+    },
+    {
+      "name": "attr_key_to_text_from_exp",
+      "value": "经验"
+    }
+  ]
+}
