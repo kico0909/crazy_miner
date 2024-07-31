@@ -25,7 +25,7 @@ export class WORLD {
   private _per: number = 0 // 一次的挖掘进度
   private _mapIndex: number = 0 // 矿坑地图编号
   private _deep: number = 0 // 挖掘深度
-  private _events: core.TTypeEventBox[]
+  private _events: core.TTypeEventBox[] = []
   private _maps: DB.TMapData[] = []
   private _pause = false // 世界暂停
 
@@ -33,10 +33,14 @@ export class WORLD {
 
   constructor(archiveFile: TArchiveFile | undefined, nickname: string = '') {
 
-    // 初始化事件数据
-    console.log(`Start: 世界事件数据初始化...`)
-    this._events = core.handlerEvents(DB.DB_Events)
-    console.log(`End: 世界事件数据初始化...`)
+    core.getDB().then(db => {
+      // 初始化事件数据
+      console.log(`Start: 世界事件数据初始化...`)
+      const events = core.handlerEvents(db.minerEvents)
+      this._events = events
+      console.log(`End: 世界事件数据初始化...`)
+
+    })
 
     // 初始化地图
     console.log(`Start: 地图数据初始化...`)

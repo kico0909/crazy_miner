@@ -45,21 +45,23 @@ export struct Meditation {
     setTimeout(() => {
       this.meditationOK = true
     }, conf.Meditation.onceTimeLen)
-    const result = this.w.player.meditation(this.w)
-    if (!result.result) {
-      if (result.msg) {
-        this.MeditationMsgs.push(`修炼: ${result.msg}`)
-      } else {
-        const text = utils.getRandomObjectByProbability(MeditationMessage)
-        if (!text) {
-          this.MeditationMsgs.push(`修炼: 你尝试进行一次突破[很可惜无功而返]|1`)
+
+    this.w.player.meditation(this.w).then(result => {
+      if (!result.result) {
+        if (result.msg) {
+          this.MeditationMsgs.push(`修炼: ${result.msg}`)
         } else {
-          this.MeditationMsgs.push(text.messageTemplate)
+          const text = utils.getRandomObjectByProbability(MeditationMessage)
+          if (!text) {
+            this.MeditationMsgs.push(`修炼: 你尝试进行一次突破[很可惜无功而返]|1`)
+          } else {
+            this.MeditationMsgs.push(text.messageTemplate)
+          }
         }
+      } else {
+        this.MeditationMsgs.push(`你灵光一闪: ${result?.msg}`)
       }
-    } else {
-      this.MeditationMsgs.push(`你灵光一闪: ${result?.msg}`)
-    }
+    })
   }
 
   onMeditationMsgsChange(propName: string){

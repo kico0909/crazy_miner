@@ -2,7 +2,7 @@ import * as utils from '../utils'
 import * as core from './core'
 import { WORLD } from './world'
 import { Item } from './item'
-import { calcPlayerLevelByExp } from './core'
+import { calcPlayerLevelByExp } from './core/core'
 
 export interface TAchiveItem {
   name: string
@@ -67,36 +67,47 @@ export class Person {
   }
 
   // 用户打坐
-  meditation(w: WORLD): core.TMeditationResult {
-    if (w.isPause()) return { result: false, msg: '世界处于静止状态，你无法修炼!|1'}
-    if (this._meditationPoint <= 0) {
-      return { result: false, msg: '没有灵感,无法修炼!|1'}
-    }
-    this.meditationPoint = -1
-    const result = core.actionPlayerMeditation(w)
-
-    if (result.result) {
-      switch (result.effType) {
-        case EPlayerAttrs.Strength:
-          this._attrs.strength += result.effValue ? result.effValue : 0
-          break
-        case EPlayerAttrs.Intellect:
-          this._attrs.intellect += result.effValue ? result.effValue : 0
-          break
-        case EPlayerAttrs.Strong:
-          this._attrs.strong += result.effValue ? result.effValue : 0
-          break
-        case EPlayerAttrs.Luck:
-          this._attrs.luck += result.effValue ? result.effValue : 0
-          break
-        case EPlayerAttrs.Exp:
-          this._exp += result.effValue ? result.effValue : 0
-          break
-        default:
-          console.warn('打坐特效触发', `[${result.effType}]无法识别的特效类型`)
+  meditation(w: WORLD): Promise<core.TMeditationResult> {
+    return new Promise<core.TMeditationResult>(resolve => {
+      let res: core.TMeditationResult = { result: false, msg: ''}
+      if (w.isPause()) {
+        res.msg = '世界处于静止状态，你无法修炼!|1'
+        resolve(res)
+        return
       }
-    }
-    return result
+      if (this._meditationPoint <= 0) {
+        res.msg = '没有灵感,无法修炼!|1'
+        resolve(res)
+        return
+      }
+      this.meditationPoint = -1
+
+      core.actionPlayerMeditation(w).then(result => {
+        if (result.result) {
+          switch (result.effType) {
+            case EPlayerAttrs.Strength:
+              this._attrs.strength += result.effValue ? result.effValue : 0
+              break
+            case EPlayerAttrs.Intellect:
+              this._attrs.intellect += result.effValue ? result.effValue : 0
+              break
+            case EPlayerAttrs.Strong:
+              this._attrs.strong += result.effValue ? result.effValue : 0
+              break
+            case EPlayerAttrs.Luck:
+              this._attrs.luck += result.effValue ? result.effValue : 0
+              break
+            case EPlayerAttrs.Exp:
+              this._exp += result.effValue ? result.effValue : 0
+              break
+            default:
+              console.warn('打坐特效触发', `[${result.effType}]无法识别的特效类型`)
+          }
+        }
+        resolve(result)
+      })
+    })
+
   }
 
   set meditationPoint(num: number) {

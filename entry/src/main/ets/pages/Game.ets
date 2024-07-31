@@ -1,12 +1,10 @@
-// import router from '@ohos.router'
+import router from '@ohos.router'
 import { MainMenu } from '../common/components/MainMenu'
 import { Default } from '../common/components/sys/Default'
 import { Adventure, TMessage } from '../common/components/sys/Adventure'
 import { Meditation } from '../common/components/sys/Meditation'
 import { System } from '../common/components/sys/System'
-import { AD } from '../common/components/ad'
 
-import { AdventureMessages } from '../common/values'
 import { WORLD, TArchiveFile } from '../common/game/world'
 import { Person } from '../common/game/player'
 
@@ -16,6 +14,8 @@ import * as utils from '../common/utils'
 import * as conf from '../common/game/config'
 import * as core  from '../common/game/core'
 
+console.log('进入游戏世界界面')
+
 // 激活及初始化持久化本地存储
 core.initWorldData()
 
@@ -23,7 +23,7 @@ core.initWorldData()
 @Component
 struct Login {
   @State showCtrlBox: string = 'adventure'
-  @State AdventureMessages: TMessage[] = [...AdventureMessages]
+  @State AdventureMessages: TMessage[] = []
   @State AdventurePer: number = 0
 
   @State inputName: string = ''
@@ -48,6 +48,7 @@ struct Login {
   }
 
   onDidBuild(): void {
+    console.log('进入游戏世界界面')
     this.worldToCreate()
   }
 
@@ -91,7 +92,10 @@ struct Login {
         message: `欢迎回到${this.world.map.name}里,亲爱的[${this.achiveData.user.name}]`
       })
       this.player = this.world.player
-      this.worldToRun()
+      // TODO 需要优化成真正的异步结束执行世界创建
+      setTimeout(() => {
+        this.worldToRun()
+      }, 500)
     }
   }
 
@@ -122,12 +126,12 @@ struct Login {
 
   build() {
     Column(){
-      // 广告植入
-      Column(){
-        AD({
-          visibilityState: Visibility.Visible
-        })
-      }.width('100%').height('114lpx')
+      // // 广告植入
+      // Column(){
+      //   AD({
+      //     visibilityState: Visibility.Visible
+      //   })
+      // }.width('100%').height('114lpx')
 
       // 主要视觉交互区域
       Column(){

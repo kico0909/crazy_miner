@@ -1,6 +1,6 @@
 import * as conf from './game/config'
 import { TAchiveItem, TAchiveUser, Person, TPersonAttr } from './game/player'
-import { TGameState } from './game/core'
+// import { TGameState } from './game/core'
 import { TArchiveFile, WORLD } from './game/world'
 import { TItemData, Item } from './game/item'
 import * as core from './game/core'
@@ -91,7 +91,6 @@ export function resetData() {
 // 将storage中的用户存档初始化
 export function initData() {
   const avhieveDefaultData = core.initWorldData()
-
 }
 
 // 获得用户存档数据

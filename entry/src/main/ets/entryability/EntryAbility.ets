@@ -2,12 +2,24 @@ import { AbilityConstant, UIAbility, Want } from '@kit.AbilityKit';
 import { hilog } from '@kit.PerformanceAnalysisKit';
 import { window } from '@kit.ArkUI';
 
-import { PersistentStoragePath } from '../common/game/config'
+import { util } from '@kit.ArkTS'
+import { initialize } from '@hw-agconnect/hmcore';
 
 export default class EntryAbility extends UIAbility {
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
     hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onCreate');
+
+    // 初始化云函数SDK
+    this.context.resourceManager.getRawFileContent('agconnect-services.json').then(input => {
+      let jsonString: string = util.TextDecoder.create('utf-8', {
+        ignoreBOM: true
+      }).decodeWithStream(input, {
+        stream: false
+      });
+      initialize(this.context, JSON.parse(jsonString));
+    })
   }
+
 
   onDestroy(): void {
     hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onDestroy');
