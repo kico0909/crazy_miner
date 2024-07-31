@@ -1,15 +1,14 @@
 import router from '@ohos.router'
 // import { AppCopyRightInfo } from '../common/values'
+import { FunctionalButton, functionalButtonComponentManager } from '@kit.ScenarioFusionKit';
+import { hilog } from '@kit.PerformanceAnalysisKit';
 
 @Entry
 @Component
 struct Index {
-  @State Time: string = (new Date()).toLocaleString()
 
   onPageShow(): void {
-    setInterval(() => {
-      this.Time = (new Date()).toLocaleString()
-    }, 1000)
+
   }
 
   build() {

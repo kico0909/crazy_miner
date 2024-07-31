@@ -303,7 +303,7 @@ interface TMeditationEffectActivitedResult {
 }
 function meditationEffectActivited(): TMeditationEffectActivitedResult | undefined {
   // 随机获得一个修炼事件
-  const effect = utils.getRandomObjectByProbability<DB.TMeditationEventItem>(DB.Meditations)
+  const effect = utils.getRandomObjectByProbability<DB.TMeditationEventItem>(DB.Meditations())
   if (!effect) return undefined
   const msg = effect.msg
   const efs = effect.effect.split(',')

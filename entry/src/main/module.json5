@@ -61,7 +61,10 @@
         "name": "ohos.permission.APP_TRACKING_CONSENT",
         "reason": "$string:reason",
         "usedScene": {
-          "when": "always"
+          "abilities": [
+            "EntryFormAbility"
+          ],
+          "when": "inuse"
         }
       }
     ]
