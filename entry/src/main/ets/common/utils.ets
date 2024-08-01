@@ -5,6 +5,23 @@ import { TArchiveFile, WORLD } from './game/world'
 import { TItemData, Item } from './game/item'
 import * as core from './game/core'
 
+
+
+const ctx = getContext(this)
+/**
+ * 资源转字符串
+ */
+export function ResourceConvertString(resource:Resource):string{
+  return ctx.resourceManager.getStringSync(resource)
+}
+/**
+ * 资源转字符串
+ */
+export function ResourceConvertInt(resource:Resource): number{
+  const rs = parseInt(ctx.resourceManager.getStringSync(resource))
+  return isNaN(rs) ? 0 : rs
+}
+
 /**
  * 在一个包含 probability 字段的对象数组中按照概率随机返回一个对象。
  *

@@ -1,22 +1,12 @@
-import { TAchiveUser, Person } from './player'
-import { TGameState, playerActionOnce } from './core'
+import * as t from './types'
+import { Person } from './player'
+import { playerActionOnce } from './core'
 import { Item } from './item'
 import * as utils from '../utils'
 import * as conf from './config'
 import * as core from './core'
 
-// DB
-import * as DB from './db'
-
-export interface TArchiveFile {
-  user: TAchiveUser
-  game: TGameState
-}
-
-interface TWordEventShow {
-  per: number
-  message: string[]
-}
+export * from './types'
 
 let timeout: number = 0
 
@@ -25,42 +15,20 @@ export class WORLD {
   private _per: number = 0 // 一次的挖掘进度
   private _mapIndex: number = 0 // 矿坑地图编号
   private _deep: number = 0 // 挖掘深度
-  private _events: core.TTypeEventBox[] = []
-  private _maps: DB.TMapData[] = []
+  private _events: t.TTypeEventBox[] = []
+  private _maps: t.TMapDataItem[] = []
   private _pause = false // 世界暂停
+  private _status = 'none' // 世界的状态
+  private _actionCB: ((evt: t.TWordEventShow) => void) | undefined // 世界运行的回调钩子
 
-  private _actionCB: ((evt: TWordEventShow) => void) | undefined
-
-  constructor(archiveFile: TArchiveFile | undefined, nickname: string = '') {
-
-    core.getDB().then(db => {
-      // 初始化事件数据
-      console.log(`Start: 世界事件数据初始化...`)
-      const events = core.handlerEvents(db.minerEvents)
-      this._events = events
-      console.log(`End: 世界事件数据初始化...`)
-
-    })
-
-    // 初始化地图
-    console.log(`Start: 地图数据初始化...`)
-    this._maps = DB.maps
-    console.log(`End: 地图数据初始化...`)
-
-    // 初始化用户信息
-    console.log(`Start: 用户信息初始化...`)
-    const items: Item[] = []
-    if (!nickname && archiveFile) { // 正常基于用户存档恢复创建游戏
-      console.log(`Runing: 已有用户信息还原...`)
-      if (archiveFile.user.items.length > 0) {
-        archiveFile.user.items.forEach(v => {
-          items.push(utils.createUsetItem(v))
-        })
-      }
+  constructor(archiveFile: t.TArchiveFile | undefined, nickname: string = '') {
+    this._status = 'none'
+    if (!nickname && archiveFile) { // 正常基于用户存档恢复创建游戏(不存在昵称, 存在存档数据)
+      console.log(`Start: 已有用户信息还原...`)
       this._personal = new Person(
         archiveFile.user.name,
         archiveFile.user.attrs,
-        items,
+        [],
         archiveFile.user.mapIndex,
         archiveFile.user.exp,
         archiveFile.user.level,
@@ -69,12 +37,28 @@ export class WORLD {
       this._per = archiveFile.game.per ? archiveFile.game.per : 0
       this._mapIndex = archiveFile.game.mapIndex ? archiveFile.game.mapIndex : 0
       this._deep = archiveFile.game.deep ? archiveFile.game.deep : 0
+      console.log(`End: 已有用户信息还原...`)
+    } else {
+      // 新建游戏 初始化用户状态, 其他数据使用默认值即可
+      console.log(`Start: 用户信息初始化...`)
+      this._personal = new Person(nickname, utils.createPlayerAttrs())
       console.log(`End: 用户信息初始化...`)
-      return
     }
-    // 新建游戏 初始化用户状态, 其他数据使用默认值即可
-    this._personal = new Person(nickname, utils.createPlayerAttrs())
-    console.log(`End: 用户信息初始化...`)
+
+    core.getDB().then(db => {
+      // 初始化事件数据
+      console.log(`Start: 世界事件数据初始化...`)
+      const events = core.handlerEvents(db.minerEvents)
+      this._events = events
+      console.log(`End: 世界事件数据初始化...`)
+
+      // 初始化地图
+      console.log(`Start: 地图数据初始化...`)
+      this._maps = db.maps
+      console.log(`End: 地图数据初始化...`)
+      this._status = 'inited'
+      console.log(`世界初始化结束`)
+    })
   }
 
   private _autoSaveCount = 1
@@ -83,7 +67,7 @@ export class WORLD {
       cb ? cb() : false
       return
     }
-    let result: core.TWorldAction | null = null
+    let result: t.TWorldAction | null = null
     if (this._per >= 100) {
       this._per = 0
     } else {
@@ -105,7 +89,7 @@ export class WORLD {
     }
 
     // 回调数据
-    let CBData: TWordEventShow = {
+    let CBData: t.TWordEventShow = {
       message: [],
       per: 0
     }
@@ -122,9 +106,13 @@ export class WORLD {
     cb ? cb() : false;
 
     // auto save
-    if (this._autoSaveCount++ % conf.AutoSaveStep == 0) {
+    if ((this._autoSaveCount++ % utils.ResourceConvertInt($r('app.string.AutoSaveStep'))) === 0) {
       this.saveData()
     }
+  }
+
+  get status() {
+    return this._status
   }
 
   pause() {
@@ -161,11 +149,11 @@ export class WORLD {
   }
 
   get events() {
-  return this._events
+    return this._events
   }
 
   // 世界有动作时的响应钩子
-  registerActionCall(cb?: (per: TWordEventShow) => void) {
+  registerActionCall(cb?: (per: t.TWordEventShow) => void) {
     if (cb) this._actionCB = cb
   }
 
@@ -180,7 +168,7 @@ export class WORLD {
 
   }
 
-  private _getWorldFile(): TGameState {
+  private _getWorldFile(): t.TGameState {
     return {
       per: this._per,
       mapIndex: this._mapIndex,
@@ -189,7 +177,7 @@ export class WORLD {
   }
 
   saveData() {
-    const gameState: TArchiveFile = {
+    const gameState: t.TArchiveFile = {
       user: this._personal.getUserFile(),
       game: this._getWorldFile()
     }

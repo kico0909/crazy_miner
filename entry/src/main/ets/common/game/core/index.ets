@@ -1,22 +1,14 @@
-import { initWorldData, initDB, TGameState} from './init'
-import { getWorldData, saveWorldData, handlerEvents, playerActionOnce, TTypeEventBox, TWorldAction} from './world'
-import { getDB, TMeditationEventItem, TMinerActionEventItem, GameDB, TActionEvent} from './db'
-import { actionPlayerMeditation, meditationPointsMaxByLevel, TMeditationResult } from './meditation'
+import { initWorldData, initDB, initWorld } from './init'
+import { getWorldData, saveWorldData, handlerEvents, playerActionOnce} from './world'
+import { getDB, GameDB } from './db'
+import { actionPlayerMeditation, meditationPointsMaxByLevel } from './meditation'
 
 // 方法
 export {
-  initWorldData, initDB,
+  initWorldData, initDB, initWorld,
   getWorldData, saveWorldData, handlerEvents, playerActionOnce,
   getDB,
   actionPlayerMeditation, meditationPointsMaxByLevel
-}
-
-// interface
-export {
-  TGameState,
-  TTypeEventBox, TWorldAction,
-  TMeditationEventItem, TMinerActionEventItem, TActionEvent,
-  TMeditationResult
 }
 
 // class

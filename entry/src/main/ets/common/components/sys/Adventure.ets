@@ -3,6 +3,7 @@ import * as utils from '../../utils'
 import * as core from '../../game/core'
 import * as conf from '../../game/config'
 
+import { MessageLine } from '../MessageLine'
 import { AdventureProcessBar } from './AdventureProcessBar'
 
 export class TMessage {
@@ -46,15 +47,17 @@ export struct Adventure {
             scroller: this.listScroller
           }){
             ForEach(this.messages, (item: TMessage) => {
-
               if (item){
                 ListItem(){
-                  Text(item.text).fontColor($r('app.color.log_text_font_color'))
-                }.padding({top: '10lpx', bottom: '10lpx'})
+                  MessageLine({
+                    message: item.text
+                  })
+                }.padding('5lpx')
               }
             })
-          }.width('100%').height('100%').padding({left: '5%', right:'5%'})
-      }.width('100%').height('calc(50% - 75lpx)').backgroundColor($r('app.color.start_window_background'))
+          }.width('100%').height('100%').padding('5lpx')
+      }.width('100%').height('calc(50% - 75lpx)').padding('10lpx')
+      .backgroundColor($r('app.color.start_window_background'))
 
       Row(){
         AdventureProcessBar({
@@ -103,9 +106,9 @@ export struct Adventure {
             Text(`${conf.AttrToText.get('meditationPoint')}: ${this.World.player.meditationPoint}/${core.meditationPointsMaxByLevel(this.World.player.level)}`).StyleInfoItem().fontColor($r('app.color.normal_text_font_color'))
           }
         }.StyleInfoLine()
-      }.width('100%').height('calc(50% - 75lpx)')
-      .padding('15lpx')
-      .backgroundColor($r('app.color.start_window_background'))
+      }
+      .width('100%').height('calc(50% - 75lpx)')
+      .padding('15lpx').backgroundColor($r('app.color.start_window_background'))
     }.width('100%').height('100%')
   }
 }

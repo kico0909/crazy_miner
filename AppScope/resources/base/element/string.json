@@ -15,6 +15,14 @@
     {
       "name": "reason",
       "value": "需要通过广告,帮我糊口"
+    },
+    {
+      "name": "PersistentStoragePath",
+      "value": "__miner_storage__"
+    },
+    {
+      "name": "AutoSaveStep",
+      "value": "5"
     }
   ]
 }

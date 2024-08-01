@@ -1,16 +1,14 @@
 import { Person, TAchiveUser, TAchiveItem, TPersonAttr } from './player'
 import { TArchiveFile } from './world'
 
-// 道具库
-import { items } from './db/items'
-
-
 export interface TItemData {
   name: string
   isUse: boolean
   stacking: boolean
   effectScript: string
 }
+
+const items: TItemData[] = []
 
 // 背包内道具类
 export class Item {

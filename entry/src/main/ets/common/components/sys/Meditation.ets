@@ -4,7 +4,7 @@ import * as conf from '../../game/config'
 import { WORLD } from '../../game/world'
 import { Person } from '../../game/player'
 import { MeditionBtn } from './MeditationBtn'
-import { MeditationMessageItem } from './MeditationMessageItem'
+import { MessageLine } from '../MessageLine'
 
 interface TMeditationMessage {
   probability: number
@@ -42,9 +42,12 @@ export struct Meditation {
   clickToMeditation() {
     if (!this.meditationOK) return
     this.meditationOK = false
-    setTimeout(() => {
-      this.meditationOK = true
-    }, conf.Meditation.onceTimeLen)
+    core.getDB().then(rs => {
+      const Meditation = rs.config?.meditation
+      setTimeout(() => {
+        this.meditationOK = true
+      }, Meditation? Meditation.onceTimeLen : 5000)
+    })
 
     this.w.player.meditation(this.w).then(result => {
       if (!result.result) {
@@ -77,10 +80,11 @@ export struct Meditation {
           scroller: this.listScroller
         }){
           ForEach(this.MeditationMsgs, (msg: string) => {
-            MeditationMessageItem({
-              msg: msg.split('|')[0],
-              quality: msg.split('|')[1]
-            })
+            ListItem(){
+              MessageLine({
+                message: msg
+              })
+            }.padding('5lpx')
           })
         }.width('100%').height('100%')
       }.width('100%').height('600lpx').padding('20lpx')

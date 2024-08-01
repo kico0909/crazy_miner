@@ -1,5 +1,4 @@
 import * as conf from '../config'
-import * as DB from '../db'
 import * as utils from '../../utils'
 import { WORLD, TArchiveFile } from '../world'
 import { EPlayerAttrs, TAchiveItem, TAchiveUser, Person, TPersonAttr } from '../player'

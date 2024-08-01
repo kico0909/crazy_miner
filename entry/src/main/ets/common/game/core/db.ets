@@ -1,42 +1,15 @@
 /*
  * 游戏世界数据库
  * */
-import * as DB from '../db'
 import * as utils from '../../utils'
 import * as conf from '../config'
+import * as t from '../types'
 
 // 云函数等相关引用
 import { http } from '@kit.NetworkKit';
 
-// 修炼事件
-export interface TMeditationEventItem {
-  msg: string
-  effect: string
-  probability: number
-  quality: number
-}
-
-// 挖矿事件
-export interface TMinerActionEventItem {
-  type: string // 事件分类
-  textTemplate: string // 文字模版
-  level: number // 事件等级
-  condition: Function // 执行成功率
-  effect?: string // 执行效果
-  probability: number //
-}
-
-export interface TActionEvent {
-  type: string // 事件分类
-  textTemplate: string // 文字模版
-  level: number // 事件等级
-  condition: Function // 执行成功率
-  effect?: string // 执行效果
-  probability: number //
-}
-
 function getDBFromCloudFunc<T>(url: string): Promise<T> {
-  return new Promise<T>(resolve => {
+  return new Promise<T>((resolve, reject) => {
     const ajax = http.createHttp()
     ajax.request(url, {
       method: http.RequestMethod.GET,
@@ -45,69 +18,94 @@ function getDBFromCloudFunc<T>(url: string): Promise<T> {
       }
     }).then((req) => {
       resolve(JSON.parse(req.result as string) as T)
-    })
-  })
-}
-//https://6ak5hs5y8rcf4mj7u6.api-drcn.agconnect.link/muddb/meditation
-//https://6ak5hs5y8rcf4mj7u6.api-drcn.agconnect.link/muddb/minerEvents
-
-// 修炼事件数据 从云函数获取
-function Meditations(): Promise<TMeditationEventItem[]>  {
-  return new Promise<TMeditationEventItem[]>((resolve, reject) => {
-    getDBFromCloudFunc<TMeditationEventItem[]>('https://6ak5hs5y8rcf4mj7u6.api-drcn.agconnect.link/muddb/meditation').then((req) => {
-      resolve(req)
+    }).catch((ret: http.HttpResponse) => {
+      reject(ret)
     })
   })
 }
 
-// 挖矿事件数据 从云函数获取
-function MinerEvents(): Promise<TMinerActionEventItem[]>  {
-  return new Promise<TMinerActionEventItem[]>((resolve, reject) => {
-    getDBFromCloudFunc<TMinerActionEventItem[]>('https://6ak5hs5y8rcf4mj7u6.api-drcn.agconnect.link/muddb/minerEvents').then((req) => {
-      resolve(req)
+// 全部基础数据 从云函数获取
+function CrazyMinerDB(): Promise<t.TBaseDB>  {
+  return new Promise<t.TBaseDB>((resolve, reject) => {
+    getDBFromCloudFunc<t.TBaseDB>(utils.ResourceConvertString($r('app.string.cloudFunction_db_path'))).then((req) => {
+      setTimeout(() => {
+        resolve(req)
+      }, 500)
+    }).catch((ret: http.HttpResponse) => {
+      reject(ret)
     })
   })
 }
+
+
 
 export class GameDB {
 
   // 修炼事件
-  private _meditations: TMeditationEventItem[] = []
+  private _meditations: t.TMeditationEventItem[] = []
   get meditations() {
     return this._meditations
   }
 
   // 挖矿事件
-  private _minerEvents: TMinerActionEventItem[] = []
+  private _minerEvents: t.TMinerActionEventItem[] = []
   get minerEvents() {
     return this._minerEvents
   }
 
-  constructor(CB?: () => void) {
-    this._init(CB)
+  private _maps: t.TMapDataItem[] = []
+  get maps() {
+    return this._maps
   }
 
-  private _init(final?: () => void) {
-    console.warn('基础数据初始化:', '修炼事件数据')
-    Meditations().then(rs => {
-      this._meditations = rs
-      console.warn('基础数据初始化:', '挖矿事件数据')
-      MinerEvents().then(rs => {
-        this._minerEvents = rs
-        final ? final() : false
-      })
+  private _config: t.TSysConfig | undefined = undefined
+  get config() {
+    return this._config
+  }
+
+  private _quality: Map<string, string> = new Map()
+  get quality() {
+    return this._quality
+  }
+
+  constructor(CB?: () => void) {
+    this._init(CB, CB)
+  }
+
+
+  private _init(success?: () => void, fail?: (ret?: http.HttpResponse) => void) {
+    console.warn('Start: 基础数据初始化:', '疯狂矿工基础数据获取')
+    CrazyMinerDB().then(rs => {
+      try {
+        console.warn('Ing 基础数据初始化:', JSON.stringify(rs, null, 4))
+
+        this._meditations = rs.meditations
+        this._minerEvents = rs.minerEvents
+        this._maps = rs.maps
+        this._config = rs.config
+        this._quality = new Map(rs.quality)
+
+        console.warn('End: 基础数据初始化:', '数据初始化完成')
+        success ? success() : false
+      } catch(e) {
+        fail ? fail(e) : false
+      }
+    }).catch((ret: http.HttpResponse) => {
+      fail ? fail(ret) : false
     })
   }
 }
 
 let DBO: GameDB | undefined = undefined;
 
-export function getDB(CB?: () => void): Promise<GameDB>{
+export function getDB(CB?: (ret?: http.HttpResponse) => void): Promise<GameDB>{
   return new Promise<GameDB>((resolve) => {
     if (!DBO) {
-      DBO = new GameDB(() => {
-        resolve(DBO as GameDB)
-        CB?CB():false
+      DBO = new GameDB((ret?: http.HttpResponse) => {
+        if (!ret) {
+          resolve(DBO as GameDB)
+        }
+        CB?CB(ret):false
       })
     } else {
       resolve(DBO)

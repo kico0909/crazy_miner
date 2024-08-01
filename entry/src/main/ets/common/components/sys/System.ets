@@ -32,13 +32,8 @@ export struct System {
 
   private _resetting = false
   private _resetData() {
-    this.w.pause()
-    const initData = core.initWorldData()
-    core.saveWorldData(initData)
-    this.w = new WORLD(initData)
-    if (!!this.w) {
-      this.resetTag = true
-    }
+    this.w.pause() // 暂停世界
+    this.resetTag = true
   }
   private _toResetData() {
     AlertDialog.show({

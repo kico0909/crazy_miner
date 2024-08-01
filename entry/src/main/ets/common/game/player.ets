@@ -1,45 +1,16 @@
 import * as utils from '../utils'
 import * as core from './core'
+import * as t from './types'
 import { WORLD } from './world'
 import { Item } from './item'
 import { calcPlayerLevelByExp } from './core/core'
 
-export interface TAchiveItem {
-  name: string
-  count: number
-}
-
-// 用户属性存档
-export interface TAchiveUser {
-  name: string
-  attrs: TPersonAttr
-  items: TAchiveItem[]
-  mapIndex: number
-  exp: number
-  level: number
-  meditationPoint: number
-}
-
-// 用户属性
-export interface TPersonAttr { // 角色属性类
-  strength: number // 精力
-  strong: number // 强壮
-  intellect: number // 智力
-  luck: number // 幸运
-}
-
-export enum EPlayerAttrs {
-  Strength = 'strength',
-  Strong = 'strong',
-  Intellect = 'intellect',
-  Luck = 'luck',
-  Exp = 'exp'
-}
+export * from './types';
 
 // 用户
 export class Person {
   private _nickname: string = ''
-  private _attrs: TPersonAttr
+  private _attrs: t.TPersonAttr
   private _bag: Item[] = []
   private _mapIndex: number = 0
   private _level: number = 1
@@ -49,7 +20,7 @@ export class Person {
 
   constructor(
     name: string,
-    attrs: TPersonAttr = {  strength: 0, strong: 0, intellect: 0, luck: 0 },
+    attrs: t.TPersonAttr = {  strength: 0, strong: 0, intellect: 0, luck: 0 },
     bag: Item[] = [],
     mapIndex: number = 0,
     exp: number = 0,
@@ -67,9 +38,9 @@ export class Person {
   }
 
   // 用户打坐
-  meditation(w: WORLD): Promise<core.TMeditationResult> {
-    return new Promise<core.TMeditationResult>(resolve => {
-      let res: core.TMeditationResult = { result: false, msg: ''}
+  meditation(w: WORLD): Promise<t.TMeditationResult> {
+    return new Promise<t.TMeditationResult>(resolve => {
+      let res: t.TMeditationResult = { result: false, msg: ''}
       if (w.isPause()) {
         res.msg = '世界处于静止状态，你无法修炼!|1'
         resolve(res)
@@ -85,19 +56,19 @@ export class Person {
       core.actionPlayerMeditation(w).then(result => {
         if (result.result) {
           switch (result.effType) {
-            case EPlayerAttrs.Strength:
+            case t.EPlayerAttrs.Strength:
               this._attrs.strength += result.effValue ? result.effValue : 0
               break
-            case EPlayerAttrs.Intellect:
+            case t.EPlayerAttrs.Intellect:
               this._attrs.intellect += result.effValue ? result.effValue : 0
               break
-            case EPlayerAttrs.Strong:
+            case t.EPlayerAttrs.Strong:
               this._attrs.strong += result.effValue ? result.effValue : 0
               break
-            case EPlayerAttrs.Luck:
+            case t.EPlayerAttrs.Luck:
               this._attrs.luck += result.effValue ? result.effValue : 0
               break
-            case EPlayerAttrs.Exp:
+            case t.EPlayerAttrs.Exp:
               this._exp += result.effValue ? result.effValue : 0
               break
             default:
@@ -158,21 +129,21 @@ export class Person {
     }
   }
 
-  setAttr(attrType: EPlayerAttrs, value: number): boolean {
+  setAttr(attrType: t.EPlayerAttrs, value: number): boolean {
     switch (attrType) {
-      case EPlayerAttrs.Strength:
+      case t.EPlayerAttrs.Strength:
         this._attrs.strength += value
         break;
-      case EPlayerAttrs.Strong:
+      case t.EPlayerAttrs.Strong:
         this._attrs.strong += value
         break;
-      case EPlayerAttrs.Intellect:
+      case t.EPlayerAttrs.Intellect:
         this._attrs.intellect += value
         break;
-      case EPlayerAttrs.Luck:
+      case t.EPlayerAttrs.Luck:
         this._attrs.luck += value
         break;
-      case EPlayerAttrs.Exp:
+      case t.EPlayerAttrs.Exp:
         return this.setExp(value)
         break;
     }
@@ -222,11 +193,11 @@ export class Person {
   }
 
   // 获取全部用户信息
-  getUserFile():　TAchiveUser {
+  getUserFile():　t.TAchiveUser {
     const name = this._nickname
-    const attrs = JSON.parse((JSON.stringify(this._attrs))) as TPersonAttr
+    const attrs = JSON.parse((JSON.stringify(this._attrs))) as t.TPersonAttr
     const mapIndex = this._mapIndex
-    const items: TAchiveItem[] = []
+    const items: t.TAchiveItem[] = []
     const exp = this._exp
     const level = this._level
     const meditationPoint = this._meditationPoint

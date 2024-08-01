@@ -1,20 +1,13 @@
 /*
  * 游戏 相关 初始化
  * */
-
+import * as t from '../types'
 import * as DB from './db'
 import * as utils from '../../utils'
 import * as conf from '../config'
 import { WORLD, TArchiveFile } from '../world'
 import { EPlayerAttrs, TAchiveItem, TAchiveUser, Person, TPersonAttr } from '../player'
 import { JSON } from '@kit.ArkTS'
-
-// 游戏存档状态声明
-export interface TGameState {
-  per: number
-  mapIndex: number
-  deep: number
-}
 
 // 游戏世界数据初始化
 export function initWorldData(): TArchiveFile {
@@ -29,7 +22,7 @@ export function initWorldData(): TArchiveFile {
     level: 1,
     meditationPoint: 0,
   }
-  const defaultGameState: TGameState = {
+  const defaultGameState: t.TGameState = {
     per: 0,
     mapIndex: 0,
     deep: 0,
@@ -39,11 +32,30 @@ export function initWorldData(): TArchiveFile {
     game: defaultGameState
   }
   const str = JSON.stringify(avhieveDefaultData)
-  PersistentStorage.persistProp(conf.PersistentStoragePath, utils.encodeStr(str))
+  PersistentStorage.persistProp(utils.ResourceConvertString($r('app.string.PersistentStoragePath')), utils.encodeStr(str))
   return avhieveDefaultData
 }
 
 // 游戏基础数据库初始化
 export function initDB(cb: () => void) {
   DB.getDB(cb)
+}
+
+// 初始化世界
+function checkWORLD(w: WORLD, callBack: () => void) {
+  if (w.status === 'inited') {
+    callBack ? callBack() : false
+  } else {
+    setTimeout(() => {
+      checkWORLD(w, callBack)
+    }, 100)
+  }
+}
+export function initWorld(file: TArchiveFile | undefined, nickname?: string ): Promise<WORLD> {
+  return new Promise<WORLD>(resolve => {
+    const w = new WORLD(file, nickname)
+    checkWORLD(w, () => {
+      resolve(w)
+    })
+  })
 }

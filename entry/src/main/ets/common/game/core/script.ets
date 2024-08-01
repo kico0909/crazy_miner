@@ -4,21 +4,14 @@
 
 import * as conf from '../config'
 import * as core from '../core'
-import * as DB from '../db'
 import * as utils from '../../utils'
+import * as t from '../types'
 
-import { Person, EPlayerAttrs } from '../player'
-import { WORLD, TArchiveFile } from '../world'
+import { Person } from '../player'
+import { WORLD } from '../world'
 
-// 效果脚本执行
-interface THandlerEffectScriptResult {
-  msg: string
-  effect: string
-  value: number
-  levelUp: boolean
-}
-export function handlerEffectScript(event: core.TActionEvent, w: WORLD): THandlerEffectScriptResult {
-  const res: THandlerEffectScriptResult = {
+export function handlerEffectScript(event: t.TMinerActionEventItem, w: WORLD): t.THandlerEffectScriptResult {
+  const res: t.THandlerEffectScriptResult = {
     msg: '',
     effect: '',
     value: 0,
@@ -47,7 +40,8 @@ export function handlerEffectScript(event: core.TActionEvent, w: WORLD): THandle
   } else {
     value = parseInt(valueArr[0])
   }
-  res.msg = `${event.textTemplate}。[${type}: ${value}]`
+  const typeName: string = conf.AttrToText.get(type) ? conf.AttrToText.get(type) as string : type
+  res.msg = `${event.textTemplate}。[${typeName}: ${value}]`
   res.value = value
   switch (type) {
     case 'exp':
@@ -57,10 +51,10 @@ export function handlerEffectScript(event: core.TActionEvent, w: WORLD): THandle
       w.deep = value
       break
     case 'strong':
-      w.player.setAttr(EPlayerAttrs.Strong, value)
+      w.player.setAttr(t.EPlayerAttrs.Strong, value)
       break
     case 'intellect':
-      w.player.setAttr(EPlayerAttrs.Intellect, value)
+      w.player.setAttr(t.EPlayerAttrs.Intellect, value)
       break
     default:
       console.warn('挖掘事件特效触发错误', '无法识别的特效脚本[${script}]')

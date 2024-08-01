@@ -16,24 +16,8 @@
       "value": "strength, 精力, intellect, 智力, strong, 力量, luck, 幸运, exp, 经验"
     },
     {
-      "name": "attr_key_to_text_from_strength",
-      "value": "精力"
-    },
-    {
-      "name": "attr_key_to_text_from_intellect",
-      "value": "智力"
-    },
-    {
-      "name": "attr_key_to_text_from_strong",
-      "value": "力量"
-    },
-    {
-      "name": "attr_key_to_text_from_luck",
-      "value": "幸运"
-    },
-    {
-      "name": "attr_key_to_text_from_exp",
-      "value": "经验"
+      "name": "cloudFunction_db_path",
+      "value": "https://6ak5hs5y8rcf4mj7u6.api-drcn.agconnect.link/mud/crazyminer/db"
     }
   ]
 }

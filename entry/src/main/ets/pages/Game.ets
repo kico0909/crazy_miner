@@ -8,13 +8,13 @@ import { System } from '../common/components/sys/System'
 import { WORLD, TArchiveFile } from '../common/game/world'
 import { Person } from '../common/game/player'
 
+import { AD } from '../common/components/ad'
+
 // 用户昵称输入弹窗
 import { PopCreateUser } from '../common/components/PopCreateUser'
 import * as utils from '../common/utils'
 import * as conf from '../common/game/config'
 import * as core  from '../common/game/core'
-
-console.log('进入游戏世界界面')
 
 // 激活及初始化持久化本地存储
 core.initWorldData()
@@ -31,7 +31,7 @@ struct Login {
   @State world: WORLD | undefined = undefined
   @State player: Person | undefined = undefined
   @State achiveData?: TArchiveFile = undefined
-  @State @Watch('onMustRunWorldChange') mustRunWorld: boolean = false
+  @State @Watch('onWorldReset') resetWorld: boolean = false
 
   onPageHide(): void {
     if (!this.world?.isPause()) {
@@ -41,6 +41,7 @@ struct Login {
   }
 
   onPageShow(): void {
+    console.log('进入游戏世界界面')
     if (this.world?.isPause()) {
       console.log('切换回前台,启动')
       this.world?.pause()
@@ -52,11 +53,11 @@ struct Login {
     this.worldToCreate()
   }
 
-  onMustRunWorldChange() {
-    console.warn('重置启动:', this.mustRunWorld)
-    if (this.mustRunWorld) {
+  onWorldReset() {
+    if (this.resetWorld) {
+      console.warn('重置整个世界')
       this.worldToCreate()
-      this.mustRunWorld = false
+      this.resetWorld = false
     }
   }
 
@@ -77,25 +78,26 @@ struct Login {
       })
       this.AdventureMessages.push(...messages);
     })
+    this.world.isPause() && this.world.pause()
     this.world.run()
   }
 
   worldToCreate() {
-    const data = core.getWorldData()
+    const data = this.resetWorld ? core.initWorldData() : core.getWorldData()
     if (!data?.user.name) {
       this.inputUserNamePopController?.open()
     } else {
       this.achiveData = data
-      this.world = new WORLD(this.achiveData)
-      AlertDialog.show({
-        title: '提示!',
-        message: `欢迎回到${this.world.map.name}里,亲爱的[${this.achiveData.user.name}]`
-      })
-      this.player = this.world.player
-      // TODO 需要优化成真正的异步结束执行世界创建
-      setTimeout(() => {
+      core.initWorld(this.achiveData).then(w => {
+        this.world = w
+        this.world.pause()
+        this.player = this.world.player
+        AlertDialog.show({
+          title: '提示!',
+          message: `欢迎回到${this.world?.map.name}里,亲爱的[${this.achiveData?.user.name}]`
+        })
         this.worldToRun()
-      }, 500)
+      })
     }
   }
 
@@ -113,11 +115,13 @@ struct Login {
           return
         }
         this.inputUserNamePopController?.close()
-        this.world = new WORLD(this.achiveData, this.inputName)
-        if (this.world) {
+        core.initWorld(this.achiveData, this.inputName).then(w => {
+          this.world = w
+          this.world.pause()
+          this.player = this.world.player
           this.world.saveData() // 完成初始化后, 进行一次保存
-        }
-        this.worldToRun()
+          this.worldToRun()
+        })
       },
       inputName: $inputName,
     })
@@ -126,12 +130,12 @@ struct Login {
 
   build() {
     Column(){
-      // // 广告植入
-      // Column(){
-      //   AD({
-      //     visibilityState: Visibility.Visible
-      //   })
-      // }.width('100%').height('114lpx')
+      // 广告植入
+      Column(){
+        AD({
+          visibilityState: Visibility.Visible
+        })
+      }.width('100%').height('114lpx')
 
       // 主要视觉交互区域
       Column(){
@@ -148,7 +152,7 @@ struct Login {
         } else if(this.showCtrlBox === 'system') {
           System({
             w: $world,
-            resetTag: this.mustRunWorld
+            resetTag: this.resetWorld
           })
         } else {
           Default()
